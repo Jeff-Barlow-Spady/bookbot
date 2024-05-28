@@ -4,6 +4,7 @@ from openai import OpenAI
 from collections import Counter
 from dotenv import load_dotenv
 import os
+import time
 
 # Load environment variables from .env file
 load_dotenv()
@@ -64,12 +65,15 @@ def find_most_common_word(file_contents):
 
 # Function to answer questions using OpenAI's GPT model
 def answer_question(file_contents, question):
-    response = client.chat.completions.create(model="gpt-3.5-turbo-16k",
-    messages=[
+    response = None
+    messages = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": f"Context: {file_contents}\n\nQuestion: {question}\nAnswer:"}
-    ],
-    max_tokens=3000)
+    ]
+    for chunk in [file_contents[i:i+4096] for i in range(0, len(file_contents), 4096)]:
+        messages[0]["content"] = f"Context: {chunk}\n\nQuestion: {question}\nAnswer:"
+        response = client.chat.completions.create(model="gpt-3.5-turbo-16k", messages=messages, max_tokens=3000)
+        time.sleep(0.5)
     answer = response.choices[0].message.content.strip()
     return answer
 
@@ -121,8 +125,11 @@ def main():
         question = None
         if action == 'ask_question':
             question = input("Enter your question: ").strip()
-        handle_action(action, file_contents, question)
+        for chunk in [file_contents[i:i+4096] for i in range(0, len(file_contents), 4096)]:
+            handle_action(action, chunk, question)
 
 # Entry point for the script
 if __name__ == "__main__":
     main()
+
+
