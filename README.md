@@ -1,3 +1,4 @@
+# BookBot is my first [Boot.dev](https://www.boot.dev) project!
 # Documentation for the BookBot Script
 (I auto generated the documentation using an LLM)
 ## BookBot is my first project!
